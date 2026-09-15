@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core palette */
+  --color-ink: #1a1a17;
+  --color-parchment: #faf6ee;
+  --color-parchment-dim: #f1ebdd;
+  --color-bottle: #1b3a2f;
+  --color-bottle-light: #2b5445;
+  --color-brass: #b08d3f;
+  --color-brass-light: #d0ac5f;
+  --color-sage: #7a9683;
+  --color-line: #dcd3bd;
+  --color-danger: #a3402f;
+
+  --background: var(--color-parchment);
+  --foreground: var(--color-ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink: var(--color-ink);
+  --color-parchment: var(--color-parchment);
+  --color-parchment-dim: var(--color-parchment-dim);
+  --color-bottle: var(--color-bottle);
+  --color-bottle-light: var(--color-bottle-light);
+  --color-brass: var(--color-brass);
+  --color-brass-light: var(--color-brass-light);
+  --color-sage: var(--color-sage);
+  --color-line: var(--color-line);
+  --color-danger: var(--color-danger);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-arabic-heading: var(--font-arabic-heading);
+  --font-arabic-body: var(--font-arabic-body);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Arabic script gets its own type family regardless of active UI locale,
+   since Hausa and English pages may still quote Arabic (Qur'an/Hadith). */
+:lang(ar) {
+  font-family: var(--font-arabic-body), serif;
+}
+
+h1:lang(ar),
+h2:lang(ar),
+h3:lang(ar) {
+  font-family: var(--font-arabic-heading), serif;
 }

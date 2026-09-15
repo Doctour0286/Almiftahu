@@ -36,25 +36,32 @@ export async function updateSession(request: NextRequest) {
   const claims = data?.claims;
 
   const { pathname } = request.nextUrl;
+  // pathname includes the /{lang} prefix (e.g. /ha/dashboard), so match on
+  // the segment after the locale rather than the raw start of the path.
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") || "/";
   const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/auth");
+    withoutLocale.startsWith("/login") ||
+    withoutLocale.startsWith("/register") ||
+    withoutLocale.startsWith("/forgot-password") ||
+    withoutLocale.startsWith("/auth");
   const isProtectedRoute =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/teacher");
+    withoutLocale.startsWith("/dashboard") ||
+    withoutLocale.startsWith("/admin") ||
+    withoutLocale.startsWith("/teacher");
+
+  const localeMatch = pathname.match(/^\/([a-z]{2})(?=\/|$)/);
+  const localePrefix = localeMatch ? localeMatch[1] : "ha";
 
   if (!claims && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = `/${localePrefix}/login`;
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
   if (claims && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = `/${localePrefix}/dashboard`;
     return NextResponse.redirect(url);
   }
 
