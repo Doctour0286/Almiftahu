@@ -7,6 +7,20 @@ import { NextResponse, type NextRequest } from "next/server";
  * happens per-page/per-action via getClaims()).
  */
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Any request that doesn't already start with a supported locale segment
+  // (e.g. the bare "/", or a bookmarked link missing the prefix) must be
+  // redirected to the default locale FIRST — before touching Supabase or
+  // any other route logic — otherwise Next has no matching page to render
+  // and the request fails outright (surfaced on Vercel as a 500).
+  const hasLocalePrefix = /^\/(ha|ar|en)(\/|$)/.test(pathname);
+  if (!hasLocalePrefix) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/ha${pathname === "/" ? "" : pathname}`;
+    return NextResponse.redirect(url);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -35,9 +49,6 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
 
-  const { pathname } = request.nextUrl;
-  // pathname includes the /{lang} prefix (e.g. /ha/dashboard), so match on
-  // the segment after the locale rather than the raw start of the path.
   const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") || "/";
   const isAuthRoute =
     withoutLocale.startsWith("/login") ||
