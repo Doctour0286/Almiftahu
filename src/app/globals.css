@@ -15,6 +15,10 @@
 
   --background: var(--color-parchment);
   --foreground: var(--color-ink);
+
+  /* Motion: strong custom easings, not the weak CSS built-ins. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @theme inline {
@@ -52,4 +56,197 @@ h1:lang(ar),
 h2:lang(ar),
 h3:lang(ar) {
   font-family: var(--font-arabic-heading), serif;
+}
+
+/* ==========================================================================
+   Interactive primitives
+   Every pressable/focusable element gets: instant :active press feedback,
+   exact-property transitions (never `all`), and a visible focus ring that
+   doesn't rely on browser default outlines (which are inconsistent and
+   often clipped by rounded corners).
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+  transform: scale(1);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--color-bottle);
+  color: var(--color-parchment);
+  padding: 0.75rem 1.5rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-bottle-light);
+  }
+}
+
+.btn-secondary {
+  border: 1px solid var(--color-bottle);
+  color: var(--color-bottle);
+  padding: 0.625rem 1.25rem;
+  background-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-bottle);
+    color: var(--color-parchment);
+  }
+}
+
+.btn-danger-outline {
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: 0.625rem 1.25rem;
+  background-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-danger-outline:hover:not(:disabled) {
+    background-color: var(--color-danger);
+    color: white;
+  }
+}
+
+/* Text/underline links used inline (e.g. "Continue learning") get the same
+   press feedback as buttons so the whole interface feels consistently
+   responsive, not just the filled buttons. */
+.link-accent {
+  color: var(--color-bottle);
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-brass);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: color 160ms ease;
+  display: inline-block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-accent:hover {
+    color: var(--color-bottle-light);
+  }
+}
+
+.link-accent:active {
+  transform: scale(0.98);
+}
+
+/* Form fields: a calm resting state, a deliberate focus state (border +
+   ring, not a jarring color swap), and no layout shift between states. */
+.field {
+  width: 100%;
+  border-radius: 0.125rem;
+  border: 1px solid var(--color-line);
+  background-color: white;
+  padding: 0.625rem 0.875rem;
+  color: var(--color-ink);
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.field:focus {
+  border-color: var(--color-bottle);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-bottle) 15%, transparent);
+}
+
+/* Cards / list rows: a resting elevation with a slightly lifted hover state
+   on fine pointers only (touch devices trigger :hover on tap, which would
+   otherwise create a false "stuck" hover state after tapping). */
+.row-interactive {
+  transition:
+    background-color 160ms ease,
+    transform 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row-interactive:hover {
+    background-color: color-mix(in srgb, var(--color-bottle) 4%, transparent);
+  }
+}
+
+.row-interactive:active {
+  transform: scale(0.99);
+}
+
+/* ==========================================================================
+   Entrance animation
+   Fades/lifts content in on mount. Uses @starting-style (cross-browser
+   baseline as of 2024). Never starts from scale(0) or a large translate —
+   small, natural offsets only. Respects prefers-reduced-motion by keeping
+   opacity but dropping the movement.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 400ms var(--ease-out),
+      transform 400ms var(--ease-out);
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+  }
+
+  /* Stagger: apply alongside .enter to list items so they cascade in
+     rather than appearing all at once. Kept short (40-70ms steps) since
+     long stagger delays feel slow rather than elegant. */
+  .enter-stagger-1 {
+    transition-delay: 40ms;
+  }
+  .enter-stagger-2 {
+    transition-delay: 80ms;
+  }
+  .enter-stagger-3 {
+    transition-delay: 120ms;
+  }
+  .enter-stagger-4 {
+    transition-delay: 160ms;
+  }
+  .enter-stagger-5 {
+    transition-delay: 200ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter {
+    opacity: 1;
+    transition: opacity 200ms ease;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
 }
